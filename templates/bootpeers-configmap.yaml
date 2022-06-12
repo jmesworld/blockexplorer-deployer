@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  bootstrap.txt: |
+      enode://{{{enode}}}@{{{ip}}}:30303
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: jmes-node
+  name: bootpeers

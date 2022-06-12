@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "commander": "^8.2.0",
+    "glob": "^7.2.0",
+    "mustache": "^4.2.0"
+  },
+  "name": "scout-deploy",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

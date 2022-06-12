@@ -1,0 +1,32 @@
+apiVersion: v1
+data:
+  archive-node.toml: |+
+    [network]
+    port = 30303
+
+    [websockets]
+    port = 8546
+    hosts = ["all"]
+    origins=["all"]
+    interface = "0.0.0.0"
+    apis = ["web3","eth","net","parity","pubsub","traces"]
+
+    [rpc]
+    port = 8545
+    hosts = ["all"]
+    cors=["all"]
+    interface = "0.0.0.0"
+    apis = ["web3","eth","net","parity","pubsub","traces"]
+
+    [footprint]
+    tracing = "on"
+    pruning = "archive"
+    fat_db = "on"
+
+
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: jmes-node
+  name: ethconf

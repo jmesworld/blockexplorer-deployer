@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.service.expose: "true"
+    kompose.volume.size: 10Gi
+  creationTimestamp: null
+  labels:
+    io.kompose.service: blockscout
+  name: blockscout
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: blockscout
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.service.expose: "true"
+        kompose.volume.size: 10Gi
+      creationTimestamp: null
+      labels:
+        io.kompose.service: blockscout
+    spec:
+      containers:
+        - args:
+            - |
+              echo 'Blockscout' && mix do ecto.create; mix do ecto.migrate ;  mix phx.server; tail -f /dev/null
+          command:
+            - /bin/sh
+            - -xc
+          env:
+            - name: COIN
+              value: JMES
+            - name: DATABASE_URL
+              value: postgresql://postgres:change_me@$(DB_SERVICE_HOST):5432/blockscout
+            - name: ECTO_USE_SSL
+              value: "false"
+            - name: ETHEREUM_JSONRPC_HTTP_URL
+              value: http://$(JMES_NODE_HTTP_SERVICE_HOST):8545
+            - name: ETHEREUM_JSONRPC_TRACE_URL
+              value: http://$(JMES_NODE_HTTP_SERVICE_HOST):8545
+            - name: ETHEREUM_JSONRPC_VARIANT
+              value: parity
+            - name: ETHEREUM_JSONRPC_WS_URL
+              value: ws://$(JMES_NODE_HTTP_SERVICE_HOST):8546
+            - name: MIX_ENV
+              value: prod
+          image: smartnode31/blockscout
+          name: blockscout
+          ports:
+            - containerPort: 4000
+          resources: {}
+      restartPolicy: Always
+status: {}

@@ -1,0 +1,80 @@
+version: '3.3'
+
+services:
+  db:
+    labels:
+      kompose.volume.size: 10Gi
+    container_name: db
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=change_me
+      - DBDATA=/opt/data
+    volumes:
+      - db_data:/opt
+#  jmes_node:
+#    labels:
+#      kompose.volume.size: 10Gi
+#    container_name: archive-jmes_node
+#    image: openethereum/openethereum
+#    ports:
+#      - "26656:26656"
+#      - "26657:26657"
+#      - "30303:30303"
+#    volumes:
+#      - jmes_data_current:/home/openethereum/.local/share/openethereum/
+#    configs:
+#      - source: ethconf
+#        target: /etc/openethereum/archive-node.toml
+#      - source:  genesis
+#        target:  /etc/openethereum/genesis.json
+#      - source: bootpeers
+#        target:  /etc/openethereum/bootstrap.txt
+#
+#    entrypoint:
+#      - /bin/sh
+#      - -xc
+#    command:
+#      - |
+#        /home/openethereum/openethereum --config /etc/openethereum/archive-node.toml --chain /etc/openethereum/genesis.json --bootnodes $$(cat /etc/openethereum/bootstrap.txt)
+
+  blockscout:
+    labels:
+      kompose.service.expose: "true"
+      kompose.volume.size: 10Gi
+    container_name: blockscout
+    # Change Image (based on local image constructed on running blockexplorer-evm/'s docker build -f ./docker/Dockerfile -t blockexplorer .
+    image: 44dc5b026f36
+    environment:
+      - COIN=JMES
+      - MIX_ENV=prod
+      - DATABASE_URL=postgresql://postgres:change_me@db/blockscout
+      - ETHEREUM_JSONRPC_VARIANT=parity
+      - ETHEREUM_JSONRPC_HTTP_URL=http://host.docker.internal:8545
+      - ETHEREUM_JSONRPC_TRACE_URL=http://host.docker.internal:8545
+      - ETHEREUM_JSONRPC_WS_URL=ws://host.docker.internal:8546
+      - ECTO_USE_SSL=false
+    ports:
+      - "80:4000"
+
+    entrypoint:
+      - /bin/sh
+      - -xc
+    command:
+      - |
+        echo 'Blockscout' && mix do ecto.create; mix do ecto.migrate ;  mix phx.server; tail -f /dev/null
+
+
+
+volumes:
+  db_data:
+  jmes_data_current:
+
+configs:
+  ethconf:
+    file: ./settings/current/archive-node.toml
+  bootpeers:
+    file: ./settings/current/bootstrap.txt
+  genesis:
+    file: ./settings/current/genesis.json

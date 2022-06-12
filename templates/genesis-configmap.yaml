@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  genesis.json: |-
+    {{#genesis}}
+      {{{.}}}
+    {{/genesis}}
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: jmes-node
+  name: genesis

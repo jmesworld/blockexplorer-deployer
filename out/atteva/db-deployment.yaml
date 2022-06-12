@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../docker-compose.yml
+    kompose.version: 1.24.0 (4a2a0458)
+    kompose.volume.size: 10Gi
+  creationTimestamp: null
+  labels:
+    io.kompose.service: db
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f ../docker-compose.yml
+        kompose.version: 1.24.0 (4a2a0458)
+        kompose.volume.size: 10Gi
+      creationTimestamp: null
+      labels:
+        io.kompose.service: db
+    spec:
+      containers:
+        - env:
+            - name: DBDATA
+              value: /opt/data
+            - name: POSTGRES_PASSWORD
+              value: change_me
+          image: postgres
+          name: db
+          ports:
+            - containerPort: 5432
+          resources: {}
+          volumeMounts:
+            - mountPath: /opt
+              name: db-data-1
+      restartPolicy: Always
+      volumes:
+        - name: db-data-1
+          persistentVolumeClaim:
+            claimName: db-data-1
+status: {}

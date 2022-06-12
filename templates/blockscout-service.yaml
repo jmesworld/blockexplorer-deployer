@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.service.expose: "true"
+    kompose.volume.size: 10Gi
+  creationTimestamp: null
+  labels:
+    io.kompose.service: blockscout
+  name: blockscout
+spec:
+  type: LoadBalancer
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 4000
+  selector:
+    io.kompose.service: blockscout
+status:
+  loadBalancer: {}

@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.volume.size: 10Gi
+  creationTimestamp: null
+  labels:
+    io.kompose.service: jmes-node
+  name: jmes-node
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: jmes-node
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.volume.size: 10Gi
+      creationTimestamp: null
+      labels:
+        io.kompose.service: jmes-node
+    spec:
+      initContainers:
+        - name: init-jmes
+          image: busybox
+          command: [ "sh" ]
+          args:
+            - "-cx"
+            - "chown -R 1000:1000 /home/openethereum/.local/share/io.parity.ethereum/"
+          volumeMounts:
+            - mountPath: /home/openethereum/.local/share/io.parity.ethereum/
+              name: jmes-data-current
+      containers:
+        - args:
+            - |
+              /home/openethereum/openethereum --config /etc/openethereum/archive-node.toml --chain /etc/openethereum/genesis.json --bootnodes $(cat /etc/openethereum/bootstrap.txt)
+          command:
+            - /bin/sh
+            - -xc
+          image: openethereum/openethereum
+          name: archive-jmes-node
+          ports:
+            - containerPort: 8545
+            - containerPort: 8546
+            #- containerPort: 30303
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/openethereum/archive-node.toml
+              name: ethconf
+              subPath: archive-node.toml
+            - mountPath: /etc/openethereum/genesis.json
+              name: genesis
+              subPath: genesis.json
+            - mountPath: /etc/openethereum/bootstrap.txt
+              name: bootpeers
+              subPath: bootstrap.txt
+            - mountPath: /home/openethereum/.local/share/io.parity.ethereum/
+              name: jmes-data-current
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            items:
+              - key: archive-node.toml
+                path: archive-node.toml
+            name: ethconf
+          name: ethconf
+        - configMap:
+            items:
+              - key: genesis.json
+                path: genesis.json
+            name: genesis
+          name: genesis
+        - configMap:
+            items:
+              - key: bootstrap.txt
+                path: bootstrap.txt
+            name: bootpeers
+          name: bootpeers
+        - name: jmes-data-current
+          persistentVolumeClaim:
+            claimName: jmes-data-current
+status: {}

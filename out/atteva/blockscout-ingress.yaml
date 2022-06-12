@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kompose.service.expose: "true"
+    kompose.volume.size: 10Gi
+  creationTimestamp: null
+  labels:
+    io.kompose.service: blockscout
+  name: blockscout
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: blockscout
+                port:
+                  number: 80
+status:
+  loadBalancer: {}
