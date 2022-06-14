@@ -13,47 +13,46 @@ services:
       - DBDATA=/opt/data
     volumes:
       - db_data:/opt
-#  jmes_node:
-#    labels:
-#      kompose.volume.size: 10Gi
-#    container_name: archive-jmes_node
-#    image: openethereum/openethereum
-#    ports:
-#      - "26656:26656"
-#      - "26657:26657"
-#      - "30303:30303"
-#    volumes:
-#      - jmes_data_current:/home/openethereum/.local/share/openethereum/
-#    configs:
-#      - source: ethconf
-#        target: /etc/openethereum/archive-node.toml
-#      - source:  genesis
-#        target:  /etc/openethereum/genesis.json
-#      - source: bootpeers
-#        target:  /etc/openethereum/bootstrap.txt
-#
-#    entrypoint:
-#      - /bin/sh
-#      - -xc
-#    command:
-#      - |
-#        /home/openethereum/openethereum --config /etc/openethereum/archive-node.toml --chain /etc/openethereum/genesis.json --bootnodes $$(cat /etc/openethereum/bootstrap.txt)
-
+  webserver:
+    container_name: webserver
+    #    image: cronosd
+    image: alexwerner/backend:0.1
+    ports:
+      - "3001:3001"
+    volumes:
+      - server_data:/opt
+  jmes_node:
+    container_name: validator-jmes_node
+    #    image: cronosd
+    image: alexwerner/cronosd:0.1
+    ports:
+      - "8545:8545"
+      - "8546:8546"
+      - "26656:26656"
+      - "26657:26657"
+      - "30303:30303"
+    volumes:
+      - jmes_data_current:/home/cronosd/.local/share/cronosd/
+    entrypoint:
+      - /bin/sh
+      - -xc
+      - pystarport serve --config ./cronos-devnet.yaml
   blockscout:
     labels:
       kompose.service.expose: "true"
       kompose.volume.size: 10Gi
     container_name: blockscout
     # Change Image (based on local image constructed on running blockexplorer-evm/'s docker build -f ./docker/Dockerfile -t blockexplorer .
-    image: 44dc5b026f36
+#    image: 44dc5b026f36
+    image: alexwerner/blockexplorer:0.1
     environment:
       - COIN=JMES
       - MIX_ENV=prod
       - DATABASE_URL=postgresql://postgres:change_me@db/blockscout
       - ETHEREUM_JSONRPC_VARIANT=parity
-      - ETHEREUM_JSONRPC_HTTP_URL=http://host.docker.internal:8545
-      - ETHEREUM_JSONRPC_TRACE_URL=http://host.docker.internal:8545
-      - ETHEREUM_JSONRPC_WS_URL=ws://host.docker.internal:8546
+      - ETHEREUM_JSONRPC_HTTP_URL=http://jmes_node:8545
+      - ETHEREUM_JSONRPC_TRACE_URL=http://jmes_node:8545
+      - ETHEREUM_JSONRPC_WS_URL=ws://jmes_node:8546
       - ECTO_USE_SSL=false
     ports:
       - "80:4000"
@@ -68,6 +67,7 @@ services:
 
 
 volumes:
+  server_data:
   db_data:
   jmes_data_current:
 
